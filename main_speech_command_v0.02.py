@@ -104,9 +104,6 @@ if __name__ == "__main__":
         if PERCENTAGE:
             print("%.2f" % (i * 100 / len(testingList)) + "%", end='\r')
 
-        # XXX
-        break
-
     # Mean ROC
     assert(len(AUCList) == len(pivotList))
     sumAUC = AUCList[0]
