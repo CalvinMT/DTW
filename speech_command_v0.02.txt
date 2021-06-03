@@ -1,0 +1,1 @@
+../../Datasets/speech_commands_v0.02/bed/a331d9cb_nohash_1.wav '../../Datasets/speech_commands_v0.02/*/a*_nohash_*.wav'
