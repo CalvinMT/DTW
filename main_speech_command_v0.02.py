@@ -118,7 +118,7 @@ def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
     """
     pool = Pool()
     # TODO - use starmap to send more arguments
-    pool.map(job, data[0:1])
+    pool.map(job, data)
     pool.close()
     pool.join()
 
