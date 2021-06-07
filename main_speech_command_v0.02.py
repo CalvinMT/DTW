@@ -6,10 +6,17 @@ import glob
 import argparse
 import matplotlib.pyplot as plt
 
+from multiprocessing import Pool, Manager
+
 GRAPH = False
 PERCENTAGE = False
 STATS = False
 VERBOSE = False
+
+# TODO - clean up
+manager = Manager()
+AUCList = manager.list()
+pivotList = manager.list()
 
 def buildTrainingList(path, testingList, validationList):
     """
@@ -90,26 +97,34 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
                 expectations.append([[0, 0]])
     return expectations
 
+def job(query, nbThresholds=1000, oneWord=True):
+    queryPath = path + query
+
+    _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=trainingPathList)
+
+    expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
+
+    if STATS:
+        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord)
+        AUCList.append(AUC)
+        pivotList.append(pivot)
+
+    #if PERCENTAGE:
+    #    print("%.2f" % (i * 100 / len(data)) + "%", end='\r')
+
 def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
     """
     TODO
     """
-    AUCList = []
-    pivotList = []
-    for i, query in enumerate(data):
-        queryPath = path + query
+    pool = Pool()
+    # TODO - use starmap to send more arguments
+    pool.map(job, data[0:1])
+    pool.close()
+    pool.join()
 
-        _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=trainingPathList)
-
-        expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
-
-        if STATS:
-            AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord)
-            AUCList.append(AUC)
-            pivotList.append(pivot)
-
-        if PERCENTAGE:
-            print("%.2f" % (i * 100 / len(data)) + "%", end='\r')
+    print(AUCList)
+    print()
+    print(pivotList)
 
     assert(len(AUCList) == len(pivotList))
     sumAUC = AUCList[0]
