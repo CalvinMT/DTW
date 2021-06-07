@@ -68,8 +68,6 @@ def runSearch(queryPath, searchPatternPath="", searchPathList=None):
         sweepList.append(qbe.dtw_sweep(queryMFCC, searchMFCC, 3)) # x: time/3, y: cost
         if VERBOSE:
             print(" Done")
-        if PERCENTAGE:
-            print("%.2f" % (i * 100 / len(searchFileList)) + "%", end='\r')
     
     bestList = [[0, 0] for i in range(len(sweepList))]
     # Find best match for each search file
