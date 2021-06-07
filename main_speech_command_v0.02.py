@@ -90,6 +90,48 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
                 expectations.append([[0, 0]])
     return expectations
 
+def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
+    """
+    TODO
+    """
+    AUCList = []
+    pivotList = []
+    for i, query in enumerate(data):
+        queryPath = path + query
+
+        _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=trainingPathList)
+
+        expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
+
+        if STATS:
+            AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord)
+            AUCList.append(AUC)
+            pivotList.append(pivot)
+
+        if PERCENTAGE:
+            print("%.2f" % (i * 100 / len(data)) + "%", end='\r')
+
+    assert(len(AUCList) == len(pivotList))
+    sumAUC = AUCList[0]
+    sumPivot = pivotList[0]
+    for i in range(1, len(AUCList)):
+        sumAUC += AUCList[i]
+        sumPivot += pivotList[i]
+    meanAUC = sumAUC / len(AUCList)
+    meanPivot = sumPivot / len(pivotList)
+
+    return meanAUC, meanPivot
+
+def save(AUC, pivot, path, name):
+    """
+    TODO
+    """
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    with open(path + name + "_auc.txt", 'w+') as f:
+        f.write("%s\n" % AUC)
+    pivot.to_csv(path + name + "_pivots.csv", index=False)
+
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
@@ -132,32 +174,12 @@ if __name__ == "__main__":
     if STATS and GRAPH:
         figure = plt.figure()
 
-    AUCList = []
-    pivotList = []
-    for i, query in enumerate(testingList):
-        queryPath = path + query
+    print("Running test set...")
+    AUC, pivot = run(testingList, path, trainingPathList)
+    save(AUC, pivot, "results/", "dtw_test")
 
-        _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=trainingPathList)
-
-        expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
-
-        if STATS:
-            AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=1000, oneWord=True)
-            AUCList.append(AUC)
-            pivotList.append(pivot)
-
-        if PERCENTAGE:
-            print("%.2f" % (i * 100 / len(testingList)) + "%", end='\r')
-
-    # Mean ROC
-    assert(len(AUCList) == len(pivotList))
-    sumAUC = AUCList[0]
-    sumPivot = pivotList[0]
-    for i in range(1, len(AUCList)):
-        sumAUC += AUCList[i]
-        sumPivot += pivotList[i]
-    meanAUC = sumAUC / len(AUCList)
-    meanPivot = sumPivot / len(pivotList)
-    stats.showROCCurve(meanAUC, meanPivot, title="Mean ROC")
+    print("Running validation set...")
+    AUC, pivot = run(validationList, path, trainingPathList)
+    save(AUC, pivot, "results/", "dtw_validation")
 
     plt.show()
