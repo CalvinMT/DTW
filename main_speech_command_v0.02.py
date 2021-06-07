@@ -27,6 +27,43 @@ def buildTrainingList(path, testingList, validationList):
                 result.append(wavSmallPath)
     return result
 
+def trimData(data, percentage=0.3):
+    """
+    Based on SpeechCommand_v0.02 directory structure.
+    """
+    lengthList = []
+    currentDirectoryLength = 0
+    currentDirectory = data[0].split("/")[-2]
+    for element in data:
+        elementDirectory = element.split("/")[-2]
+        if elementDirectory != currentDirectory:
+            lengthList.append(currentDirectoryLength)
+            currentDirectory = elementDirectory
+            currentDirectoryLength = 1
+        else:
+            currentDirectoryLength += 1
+    lengthList.append(currentDirectoryLength)
+
+    reducedLengthList = []
+    for length in lengthList:
+        reducedLengthList.append(int(length * percentage))
+    
+    result = []
+    currentDirectoryIndex = 0
+    currentDirectory = data[0].split("/")[-2]
+    cpt = 0
+    for i, element in enumerate(data):
+        elementDirectory = element.split("/")[-2]
+        if elementDirectory != currentDirectory:
+            currentDirectory = elementDirectory
+            currentDirectoryIndex += 1
+            cpt = 1
+        else:
+            if cpt < reducedLengthList[currentDirectoryIndex]:
+                result.append(data[i])
+            cpt += 1
+    return result
+
 def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
     """
     Based on SpeechCommand_v0.02 directory structure.
@@ -58,6 +95,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-g', '--graph', action='store_true', help='Enable graph display')
     parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics display')
+    parser.add_argument('-t', '--trimdata', type=float, default=1.0, help='Enable trimming of test, validation and training lists to the given percentage')
     parser.add_argument('path')
 
     printGroup = parser.add_mutually_exclusive_group()
@@ -69,6 +107,7 @@ if __name__ == "__main__":
     GRAPH = args.graph
     PERCENTAGE = args.percentage
     STATS = args.stats
+    trimDataPercentage = args.trimdata
     VERBOSE = args.verbose
     path = args.path
 
@@ -82,6 +121,12 @@ if __name__ == "__main__":
     with open(path + "validation_list.txt") as f:
         validationList = f.read().splitlines()
     trainingList = buildTrainingList(path, testingList, validationList)
+
+    if trimDataPercentage < 1.0:
+        testingList = trimData(testingList, trimDataPercentage)
+        validationList = trimData(validationList, trimDataPercentage)
+        trainingList = trimData(trainingList, trimDataPercentage)
+
     trainingPathList = [path + x for x in trainingList]
 
     if STATS and GRAPH:
