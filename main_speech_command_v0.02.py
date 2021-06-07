@@ -122,10 +122,6 @@ def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
     pool.close()
     pool.join()
 
-    print(AUCList)
-    print()
-    print(pivotList)
-
     assert(len(AUCList) == len(pivotList))
     sumAUC = AUCList[0]
     sumPivot = pivotList[0]
