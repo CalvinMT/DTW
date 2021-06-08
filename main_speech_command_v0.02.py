@@ -15,6 +15,8 @@ VERBOSE = False
 
 # TODO - clean up
 manager = Manager()
+dataLength = manager.Value('i', 0)
+progression = manager.Value('i', 0)
 AUCList = manager.list()
 pivotList = manager.list()
 
@@ -104,16 +106,20 @@ def job(query, nbThresholds=1000, oneWord=True):
         AUCList.append(AUC)
         pivotList.append(pivot)
 
-    #if PERCENTAGE:
-    #    print("%.2f" % (i * 100 / len(data)) + "%", end='\r')
+    if PERCENTAGE:
+        progression.value += 1
+        print("%.2f" % (progression.value * 100 / dataLength.value) + "%", end='\r')
 
 def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
     """
     TODO
     """
+    dataLength.value = len(data[0:10])
+    progression.value = 0
+
     pool = Pool()
     # TODO - use starmap to send more arguments
-    pool.map(job, data)
+    pool.map(job, data[0:10])
     pool.close()
     pool.join()
 
