@@ -77,24 +77,19 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
     """
     expectations = []
     currentDirectory = ""
-    queryFilename = queryPath.split("/")[-1]
     queryDirectory = queryPath.split("/")[-2]
-    queryCode = queryFilename.split("_")[0]
     if searchPathList == None:
         searchFileList = sorted(glob.glob(searchPatternPath))
     else:
         searchFileList = searchPathList
     for searchFile in searchFileList:
-        searchFilename = searchFile.split("/")[-1]
         searchDirectory = searchFile.split("/")[-2]
-        searchCode = searchFilename.split("_")[0]
         if searchDirectory != currentDirectory:
             currentDirectory = searchDirectory
-        if searchCode == queryCode:
-            if currentDirectory == queryDirectory:
-                expectations.append([[0, 1]])
-            else:
-                expectations.append([[0, 0]])
+        if currentDirectory == queryDirectory:
+            expectations.append([[0, 1]])
+        else:
+            expectations.append([[0, 0]])
     return expectations
 
 def job(query, nbThresholds=1000, oneWord=True):
