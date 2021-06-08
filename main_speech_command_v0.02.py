@@ -194,4 +194,6 @@ if __name__ == "__main__":
     AUC, pivot = run(validationList, path, trainingPathList)
     save(AUC, pivot, "results/", "dtw_validation")
 
+    print("Done")
+
     plt.show()
