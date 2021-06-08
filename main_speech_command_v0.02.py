@@ -114,12 +114,12 @@ def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
     """
     TODO
     """
-    dataLength.value = len(data[0:10])
+    dataLength.value = len(data)
     progression.value = 0
 
     pool = Pool()
     # TODO - use starmap to send more arguments
-    pool.map(job, data[0:10])
+    pool.map(job, data)
     pool.close()
     pool.join()
 
