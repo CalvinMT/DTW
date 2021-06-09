@@ -186,13 +186,15 @@ if __name__ == "__main__":
     if STATS and GRAPH:
         figure = plt.figure()
 
+    resultsPath = "results/" + "dtw_" + str(trimDataPercentage) + "/"
+
     print("Running test set...")
     AUC, pivot = run(testingList, path, trainingPathList)
-    save(AUC, pivot, "results/", "dtw_test")
+    save(AUC, pivot, resultsPath, "test")
 
     print("Running validation set...")
     AUC, pivot = run(validationList, path, trainingPathList)
-    save(AUC, pivot, "results/", "dtw_validation")
+    save(AUC, pivot, resultsPath, "validation")
 
     print("Done")
 
