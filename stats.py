@@ -144,7 +144,8 @@ def showROCCurve(AUC, pivot, figure=None, plotpos=[1, 1, 1], title="Receiver Ope
     if figure == None:
         figure = plt.figure()
     ax = figure.add_subplot(plotpos[0], plotpos[1], plotpos[2])
-    ax.set_title(title + "\n(AUC=" + str(round(AUC, 4)) + ")")
+    if title:
+        ax.set_title(title + "\n(AUC=" + str(round(AUC, 4)) + ")")
     ax.plot(np.array(1-pivot.x), np.array(pivot.y))
     ax.plot([0, 1],'r--')
     ax.set_xlabel("False Positive Rate")
