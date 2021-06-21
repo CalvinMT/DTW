@@ -77,9 +77,15 @@ def buildExpectations(query, searchPatternPath="", searchPathList=None, sweepSte
 def job(query, nbThresholds=1000, oneWord=False, inSequence=True, split=100):
     queryPath = queryDirectoryPath + query
 
-    _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=searchList)
+    # Remove search file from which query comes from
+    searchListWithoutQuery = []
+    for search in searchList:
+        if query.rstrip(".wav").split("_", 1)[1] not in search:
+            searchListWithoutQuery.append(search)
 
-    expectations = buildExpectations(query, searchPathList=searchList, inSequence=inSequence, splitList=querySplitList)
+    _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=searchListWithoutQuery)
+
+    expectations = buildExpectations(query, searchPathList=searchListWithoutQuery, inSequence=inSequence, splitList=querySplitList)
 
     if STATS:
         AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord, inSequence=inSequence)
