@@ -1,0 +1,1 @@
+../../Datasets/dylnet/Selection_morceaux/Morceaux/Mots/arrete-2_21-20181010-070000-1033-4152-04-part02-R_126779_130390.wav '../../Datasets/dylnet/Selection_morceaux/21-*-part02-R_*_*.wav'
