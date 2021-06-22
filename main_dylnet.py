@@ -49,9 +49,9 @@ def buildExpectations(query, searchPatternPath="", searchPathList=None, sweepSte
     for i, searchFile in enumerate(searchFileList):
         expectations.append([])
         tmp = searchFile.rstrip(".wav").split("_")
-        transcriptFile = tmp[0] + "_VB.ods"
-        begin = int(tmp[1])
-        end = int(tmp[2])
+        transcriptFile = tmp[0] + "_" + tmp[1] + "_VB.ods"
+        begin = int(tmp[2])
+        end = int(tmp[3])
         if not os.path.isfile(transcriptFile):
             if VERBOSE:
                 print("ODS file not found: " + transcriptFile)
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     stats.VERBOSE = VERBOSE
 
     searchDirectoryPath = path.rstrip('/') + "/"
-    queryDirectoryPath = searchDirectoryPath + "Morceaux/"
+    queryDirectoryPath = searchDirectoryPath + "Morceaux/Mots/"
     searchList = sorted(glob.glob(searchDirectoryPath + "*R_*_*.wav"))
     queryList = sorted(os.listdir(queryDirectoryPath))
 
