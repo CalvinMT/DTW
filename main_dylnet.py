@@ -156,8 +156,8 @@ if __name__ == "__main__":
     stats.VERBOSE = VERBOSE
 
     searchDirectoryPath = path.rstrip('/') + "/"
-    queryDirectoryPath = searchDirectoryPath + "Morceaux/Mots/"
-    searchList = sorted(glob.glob(searchDirectoryPath + "Segments/tmp/" + "*R_*_*.wav"))
+    queryDirectoryPath = searchDirectoryPath + "Segments/"
+    searchList = sorted(glob.glob(searchDirectoryPath + "Morceaux/" + "*R_*_*.wav"))
     #queryList = sorted(os.listdir(queryDirectoryPath))
     queryList = []
     for directoryName in next(os.walk(queryDirectoryPath))[1]:
