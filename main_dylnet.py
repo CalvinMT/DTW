@@ -9,7 +9,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from multiprocessing import Pool, Manager
-from itertools import starmap
 from unidecode import unidecode
 
 GRAPH = False
@@ -78,7 +77,7 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
                         expectations[i].append([j, 0])
     return expectations
 
-def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=True, useDirectoryName=True):
+def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=False, useDirectoryName=False):
     # Remove search file from which query comes from
     searchListWithoutQuery = []
     query = queryPath.split("/")[-1]
@@ -97,18 +96,18 @@ def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=True
 
     if PERCENTAGE:
         progression.value += 1
-        print("%.2f" % (progression.value * 100 / dataLength.value) + "%")#, end='\r')
+        print("%.2f" % (progression.value * 100 / dataLength.value) + "%", end='\r')
 
-def run(data, path, trainingPathList, querySplitList, nbThresholds=1000, oneWord=False):
+def run(data, searchList, nbThresholds=1000, oneWord=False, inSequence=False, useDirectoryName=False):
     """
     TODO
     """
     dataLength.value = len(data)
     progression.value = 0
 
+    iterable = [(x, searchList, nbThresholds, oneWord, inSequence, useDirectoryName) for x in data]
     pool = Pool()
-    # TODO - use starmap to send more arguments
-    pool.map(job, data)
+    pool.starmap(job, iterable)
     pool.close()
     pool.join()
 
