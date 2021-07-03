@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from multiprocessing import Pool, Manager
+from itertools import starmap
 from unidecode import unidecode
 
 GRAPH = False
@@ -36,12 +37,15 @@ def buildQuerySplitList(queryList):
         querySplitList.append([begin, end, searchFileName])
     return querySplitList
 
-def buildExpectations(query, searchPatternPath="", searchPathList=None, sweepStep=3, inSequence=False, splitList=[]):
+def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, sweepStep=3, inSequence=False, useDirectoryName=False):
     """
     Based on DyLNet directory structure.
     """
     expectations = []
-    queryWord = unidecode(' '.join(re.findall('([A-Za-z]+)', query.split("_")[0])))
+    if useDirectoryName:
+        queryWord = unidecode(' '.join(re.findall('([A-Za-z]+)', queryPath.split("/")[-2])))
+    else:
+        queryWord = unidecode(' '.join(re.findall('([A-Za-z]+)', queryPath.split("/")[-1].split("_")[0])))
     if searchPathList == None:
         searchFileList = sorted(glob.glob(searchPatternPath))
     else:
@@ -74,18 +78,17 @@ def buildExpectations(query, searchPatternPath="", searchPathList=None, sweepSte
                         expectations[i].append([j, 0])
     return expectations
 
-def job(query, nbThresholds=1000, oneWord=False, inSequence=True, split=100):
-    queryPath = queryDirectoryPath + query
-
+def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=True, useDirectoryName=True):
     # Remove search file from which query comes from
     searchListWithoutQuery = []
+    query = queryPath.split("/")[-1]
     for search in searchList:
         if query.rstrip(".wav").split("_", 1)[1] not in search:
             searchListWithoutQuery.append(search)
 
     _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=searchListWithoutQuery)
 
-    expectations = buildExpectations(query, searchPathList=searchListWithoutQuery, inSequence=inSequence, splitList=querySplitList)
+    expectations = buildExpectations(queryPath, searchPathList=searchListWithoutQuery, inSequence=inSequence, useDirectoryName=useDirectoryName)
 
     if STATS:
         AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord, inSequence=inSequence)
@@ -155,10 +158,14 @@ if __name__ == "__main__":
 
     searchDirectoryPath = path.rstrip('/') + "/"
     queryDirectoryPath = searchDirectoryPath + "Morceaux/Mots/"
-    searchList = sorted(glob.glob(searchDirectoryPath + "*R_*_*.wav"))
-    queryList = sorted(os.listdir(queryDirectoryPath))
+    searchList = sorted(glob.glob(searchDirectoryPath + "Segments/tmp/" + "*R_*_*.wav"))
+    #queryList = sorted(os.listdir(queryDirectoryPath))
+    queryList = []
+    for directoryName in next(os.walk(queryDirectoryPath))[1]:
+        for fileName in sorted(os.listdir(queryDirectoryPath + directoryName)):
+            queryList.append(queryDirectoryPath + directoryName + "/" + fileName)
 
-    querySplitList = buildQuerySplitList(queryList)
+    #querySplitList = buildQuerySplitList(queryList)
 
     if STATS and GRAPH:
         figure = plt.figure()
@@ -166,7 +173,7 @@ if __name__ == "__main__":
     resultsPath = "results/" + "dtw_dylnet" + "/"
 
     print("Running search...")
-    AUC, pivot = run(queryList, None, searchList, querySplitList)
+    AUC, pivot = run(queryList, searchList, nbThresholds=1000, oneWord=False, inSequence=True, useDirectoryName=True)
     save(AUC, pivot, resultsPath, "test")
 
     print("Done")
