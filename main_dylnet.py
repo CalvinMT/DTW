@@ -102,6 +102,9 @@ def run(data, searchList, nbThresholds=1000, oneWord=False, inSequence=False, us
     """
     TODO
     """
+    if PERCENTAGE:
+        print("0.00%", end='\r')
+
     dataLength.value = len(data)
     progression.value = 0
 
@@ -110,6 +113,10 @@ def run(data, searchList, nbThresholds=1000, oneWord=False, inSequence=False, us
     pool.starmap(job, iterable)
     pool.close()
     pool.join()
+
+    if PERCENTAGE:
+        # Line return after percentage print
+        print()
 
     assert(len(AUCList) == len(pivotList))
     sumAUC = AUCList[0]
