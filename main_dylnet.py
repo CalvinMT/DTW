@@ -16,6 +16,8 @@ PERCENTAGE = False
 STATS = False
 VERBOSE = False
 
+RESULTS_ROOT_DIRECTORY = "results/"
+
 # TODO - clean up
 manager = Manager()
 dataLength = manager.Value('i', 0)
@@ -143,6 +145,7 @@ if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-g', '--graph', action='store_true', help='Enable graph display')
+    parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
     parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics display')
     parser.add_argument('path')
 
@@ -157,6 +160,7 @@ if __name__ == "__main__":
     STATS = args.stats
     VERBOSE = args.verbose
     path = args.path
+    resultsDirectoryName = args.resultsname
 
     dtw.PERCENTAGE = PERCENTAGE
     dtw.VERBOSE = VERBOSE
@@ -176,7 +180,7 @@ if __name__ == "__main__":
     if STATS and GRAPH:
         figure = plt.figure()
 
-    resultsPath = "results/" + "dtw_dylnet" + "/"
+    resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 
     print("Running search...")
     AUC, pivot = run(queryList, searchList, nbThresholds=1000, oneWord=False, inSequence=True, useDirectoryName=True)
