@@ -161,7 +161,7 @@ def getTPRAndFPR(TP, TN, FP, FN):
         FPR = TN / (TN + FP)
     return TPR, FPR
 
-def computeROCCurve(sweepList, expectations, nbThresholds=100, positiveOnly=False, oneWord=False, inSequence=False):
+def computeROCCurve(sweepList, expectations, nbThresholds=100, positiveOnly=False, oneWord=False, sequenced=False):
     """
     TODO
 
@@ -172,7 +172,7 @@ def computeROCCurve(sweepList, expectations, nbThresholds=100, positiveOnly=Fals
 
     for threshold in thresholdList:
         results = computeResults(sweepList, threshold, positiveOnly, oneWord)
-        if inSequence:
+        if sequenced:
             TP, TN, FP, FN = getConfusionMatrixWithSequences(results, expectations)
         else:
             TP, TN, FP, FN = getConfusionMatrix(results, expectations)
