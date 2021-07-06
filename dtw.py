@@ -131,7 +131,7 @@ def runSearch(queryPath, searchPatternPath="", searchPathList=None):
 
     return labels, sweepList, bestList
 
-def computeResults(sweepList, threshold, positiveOnly=False, oneWord=False):
+def computeResults(sweepList, threshold, positiveOnly=False, findOnePerSweep=False):
     """
     Compare sweeping scores with the given threshold. The result is 0 if the score is 
     strictly higher than the threshold; 1 otherwise.
@@ -139,7 +139,7 @@ def computeResults(sweepList, threshold, positiveOnly=False, oneWord=False):
     :param sweepList: sweep array from search
     :param threshold: float between 0.0 and 1.0
     :param positiveOnly: boolean, True to return only positive results
-    :param oneWord: boolean, True if query and search files are made of one word only
+    :param findOnePerSweep: boolean, True if one found query validates a sweep
     :return: array with (sweep_index, result) for each search file
     """
     # results = [sweep_index, 0 or 1]
@@ -148,15 +148,15 @@ def computeResults(sweepList, threshold, positiveOnly=False, oneWord=False):
         results.append([])
         for j, score in enumerate(sweep):
             if score <= threshold:
-                if oneWord:
+                if findOnePerSweep:
                     results[i].append([0, 1])
                     break
                 else:
                     results[i].append([j, 1])
             else:
-                if not positiveOnly and not oneWord:
+                if not positiveOnly and not findOnePerSweep:
                     results[i].append([j, 0])
-                elif not positiveOnly and oneWord and j == len(sweep) - 1:
+                elif not positiveOnly and findOnePerSweep and j == len(sweep) - 1:
                     results[i].append([0, 0])
     return results
 
