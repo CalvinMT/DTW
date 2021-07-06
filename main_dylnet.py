@@ -38,7 +38,7 @@ def buildQuerySplitList(queryList):
         querySplitList.append([begin, end, searchFileName])
     return querySplitList
 
-def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, sweepStep=3, inSequence=False, useDirectoryName=False):
+def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, sweepStep=3, sequenced=False, useDirectoryName=False):
     """
     Based on DyLNet directory structure.
     """
@@ -66,20 +66,20 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
             if row.begin != begin or row.end != end:
                 continue
             if queryWord in unidecode(row.text):
-                if inSequence:
+                if sequenced:
                     expectations[i].append([[0, row.end - row.begin], 1])
                 else:
                     for j in range(int(row.begin / sweepStep), int(row.end / sweepStep)):
                         expectations[i].append([j, 1])
             else:
-                if inSequence:
+                if sequenced:
                     expectations[i].append([[0, row.end - row.begin], 0])
                 else:
                     for j in range(int(row.begin / sweepStep), int(row.end / sweepStep)):
                         expectations[i].append([j, 0])
     return expectations
 
-def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=False, useDirectoryName=False):
+def job(queryPath, searchList, nbThresholds=1000, oneWord=False, sequenced=False, useDirectoryName=False):
     # Remove search file from which query comes from
     searchListWithoutQuery = []
     query = queryPath.split("/")[-1]
@@ -89,10 +89,10 @@ def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=Fals
 
     _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=searchListWithoutQuery)
 
-    expectations = buildExpectations(queryPath, searchPathList=searchListWithoutQuery, inSequence=inSequence, useDirectoryName=useDirectoryName)
+    expectations = buildExpectations(queryPath, searchPathList=searchListWithoutQuery, sequenced=sequenced, useDirectoryName=useDirectoryName)
 
     if STATS:
-        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord, inSequence=inSequence)
+        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord, sequenced=sequenced)
         AUCList.append(AUC)
         pivotList.append(pivot)
 
@@ -100,7 +100,7 @@ def job(queryPath, searchList, nbThresholds=1000, oneWord=False, inSequence=Fals
         progression.value += 1
         print("%.2f" % (progression.value * 100 / dataLength.value) + "%", end='\r')
 
-def run(data, searchList, nbThresholds=1000, oneWord=False, inSequence=False, useDirectoryName=False):
+def run(data, searchList, nbThresholds=1000, oneWord=False, sequenced=False, useDirectoryName=False):
     """
     TODO
     """
@@ -110,7 +110,7 @@ def run(data, searchList, nbThresholds=1000, oneWord=False, inSequence=False, us
     dataLength.value = len(data)
     progression.value = 0
 
-    iterable = [(x, searchList, nbThresholds, oneWord, inSequence, useDirectoryName) for x in data]
+    iterable = [(x, searchList, nbThresholds, oneWord, sequenced, useDirectoryName) for x in data]
     pool = Pool()
     pool.starmap(job, iterable)
     pool.close()
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 
     print("Running search...")
-    AUC, pivot = run(queryList, searchList, nbThresholds=1000, oneWord=False, inSequence=True, useDirectoryName=True)
+    AUC, pivot = run(queryList, searchList, nbThresholds=1000, oneWord=False, sequenced=True, useDirectoryName=True)
     save(AUC, pivot, resultsPath, "test")
 
     print("Done")
