@@ -58,12 +58,13 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
         begin = int(tmp[2])
         end = int(tmp[3])
         if not os.path.isfile(transcriptFile):
-            if VERBOSE:
-                print("ODS file not found: " + transcriptFile)
+            print("ODS file not found: " + transcriptFile)
             continue
         transcript = pd.read_excel(transcriptFile, names=["begin", "end", "text"], engine="odf")
         for row in transcript.itertuples():
-            if row.begin != begin or row.end != end:
+            if row.begin > end:
+                break
+            if row.end < begin:
                 continue
             if queryWord in unidecode(row.text):
                 if sequenced:
