@@ -160,6 +160,47 @@ def computeResults(sweepList, threshold, positiveOnly=False, findOnePerSweep=Fal
                     results[i].append([0, 0])
     return results
 
+def computeResultsPrecisely(sweepList, threshold, positiveOnly=False):
+    """
+    Compare sweeping scores with the given threshold. The result is 0 if the score is 
+    strictly higher than the threshold or if the score isn't the minimum score of a 
+    hit group; 1 if it is the minimum score of a hit group.
+
+    :param sweepList: sweep array from search
+    :param threshold: float between 0.0 and 1.0
+    :param positiveOnly: boolean, True to return only positive results
+    :return: array with (sweep_index, result) for each search file
+    """
+    # results = [sweep_index, 0 or 1]
+    results = []
+    for i, sweep in enumerate(sweepList):
+        results.append([])
+        hitGroup = []
+        inHitGroup = False
+        for j, score in enumerate(sweep):
+            if score <= threshold:
+                hitGroup.append([j, score])
+                inHitGroup = True
+            else:
+                if inHitGroup:
+                    minimumIndex = hitGroup[0][0]
+                    minimumScore = hitGroup[0][1]
+                    for hitIndex, hitScore in hitGroup:
+                        if hitScore < minimumScore:
+                            minimumIndex = hitIndex
+                            minimumScore = hitScore
+                    if positiveOnly:
+                        results[i].append([minimumIndex, 1])
+                    else:
+                        for hitIndex, hitScore in hitGroup:
+                            if hitIndex == minimumIndex:
+                                results[i].append([hitIndex, 1])
+                            else:
+                                results[i].append([hitIndex, 0])
+                    hitGroup = []
+                    inHitGroup = False
+    return results
+
 def showSweeps(labels, sweepList, bestList, y_min=0.0, y_max=1.0):
     """
     Prepare a figure to show sweeping results for all search files. The best score per 

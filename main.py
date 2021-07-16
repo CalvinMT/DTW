@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 GRAPH = False
 PERCENTAGE = False
-STATS = False
 VERBOSE = False
 
 def buildExpectations(queryPath, searchPatternPath):
@@ -37,7 +36,6 @@ if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-g', '--graph', action='store_true', help='Enable graph display')
-    parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics display')
     parser.add_argument('-t', '--threshold', type=float, default=0.4, help='Set score threshold')
     parser.add_argument('query_path')
     parser.add_argument('search_pattern_path')
@@ -50,7 +48,6 @@ if __name__ == "__main__":
 
     GRAPH = args.graph
     PERCENTAGE = args.percentage
-    STATS = args.stats
     threshold = args.threshold
     VERBOSE = args.verbose
     queryPath = args.query_path
@@ -61,15 +58,16 @@ if __name__ == "__main__":
 
     labels, sweepList, bestList = dtw.runSearch(queryPath, searchPatternPath)
 
+    results = dtw.computeResultsPrecisely(sweepList, threshold, positiveOnly=True)
+    for i, result in enumerate(results):
+        print(labels[i] + ": ", end='')
+        for j, (hitIndex, _) in enumerate(result):
+            print(hitIndex * 3, end='')
+            if j < len(result) - 1:
+                print(" | ", end='')
+        print()
+
     if GRAPH:
         dtw.showSweeps(labels, sweepList, bestList)
-
-    expectations = buildExpectations(queryPath, searchPatternPath)
-
-    if STATS:
-        #stats.printStatistics(results, expectations)
-        if GRAPH:
-            AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=1000, oneWord=True)
-            stats.showROCCurve(AUC, pivot)
 
     plt.show()
