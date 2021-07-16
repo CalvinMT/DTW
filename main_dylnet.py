@@ -20,27 +20,26 @@ RESULTS_ROOT_DIRECTORY = "results/"
 
 # TODO - clean up
 manager = Manager()
-dataLength = manager.Value('i', 0)
+queryListLength = manager.Value('i', 0)
 progression = manager.Value('i', 0)
 AUCList = manager.list()
 pivotList = manager.list()
 
-def buildQuerySplitList(queryList):
-    """
-    Based on DyLNet directory structure.
-    """
-    querySplitList = []
-    for query in queryList:
-        tmp = query.split(".")[0]
-        begin = int(tmp.split("_")[-2])
-        end = int(tmp.split("_")[-1])
-        searchFileName = tmp.split("_")[1]
-        querySplitList.append([begin, end, searchFileName])
-    return querySplitList
-
 def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, sweepStep=3, sequenced=False, useDirectoryName=False):
     """
     Based on DyLNet directory structure.
+
+    TODO
+
+    :param queryPath: query file path
+    :param searchPatternPath: string pattern for search files
+    :param searchPathList: array of search file paths
+    :param sweepStep: integer (found in Kamper's SpeechDTW)
+    :param sequenced: boolean, True if sweeps are sequenced with begining and ends as from 
+    transcript files
+    :param useDirectoryName: boolean, True if query are to be grouped by their 
+    parent directory name
+    :return: arrays of expected results
     """
     expectations = []
     if useDirectoryName:
@@ -81,9 +80,22 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
     return expectations
 
 def job(queryPath, searchList, nbThresholds=1000, findOnePerSweep=False, sequenced=False, useDirectoryName=False):
-    # Remove search file from which query comes from
+    """
+    TODO
+
+    :param queryPath: query file path
+    :param searchList: array of search file paths
+    :param nbThresholds: integer (number of thresholds)
+    :param findOnePerSweep: boolean, True if one found query validates a sweep
+    :param sequenced: boolean, True if sweeps are sequenced with begining and ends as from 
+    transcript files
+    :param useDirectoryName: boolean, True if query are to be grouped by their 
+    parent directory name
+    :return: None
+    """
     searchListWithoutQuery = []
     query = queryPath.split("/")[-1]
+    # Remove search file from which query comes from
     for search in searchList:
         if query.rstrip(".wav").split("_", 1)[1] not in search:
             searchListWithoutQuery.append(search)
@@ -99,19 +111,31 @@ def job(queryPath, searchList, nbThresholds=1000, findOnePerSweep=False, sequenc
 
     if PERCENTAGE:
         progression.value += 1
-        print("%.2f" % (progression.value * 100 / dataLength.value) + "%", end='\r')
+        print("%.2f" % (progression.value * 100 / queryListLength.value) + "%", end='\r')
 
-def run(data, searchList, nbThresholds=1000, findOnePerSweep=False, sequenced=False, useDirectoryName=False):
+def run(queryList, searchList, nbThresholds=1000, findOnePerSweep=False, sequenced=False, useDirectoryName=False):
     """
-    TODO
+    Call job() function in parallel to search each query from the given query list 
+    among all search files in the given search list.
+    Return the mean AUC and the mean pivot points of all parallel searches.
+
+    :param queryList: array of query file paths
+    :param searchList: array of search file paths
+    :param nbThresholds: integer (number of thresholds)
+    :param findOnePerSweep: boolean, True if one found query validates a sweep
+    :param sequenced: boolean, True if sweeps are sequenced with begining and ends as from 
+    transcript files
+    :param useDirectoryName: boolean, True if query are to be grouped by their 
+    parent directory name
+    :return: AUC, ROC curve pivots (x, y, thresholds)
     """
     if PERCENTAGE:
         print("0.00%", end='\r')
 
-    dataLength.value = len(data)
+    queryListLength.value = len(queryList)
     progression.value = 0
 
-    iterable = [(x, searchList, nbThresholds, findOnePerSweep, sequenced, useDirectoryName) for x in data]
+    iterable = [(x, searchList, nbThresholds, findOnePerSweep, sequenced, useDirectoryName) for x in queryList]
     pool = Pool()
     pool.starmap(job, iterable)
     pool.close()
@@ -134,7 +158,14 @@ def run(data, searchList, nbThresholds=1000, findOnePerSweep=False, sequenced=Fa
 
 def save(AUC, pivot, path, name):
     """
-    TODO
+    Save AUC and ROC pivot points to the results directory. AUC is stored in a txt 
+    file and ROC pivot points are saved in a csv file.
+
+    :param AUC: float (Area Under the Curve)
+    :param pivot: pandas data frame pivot representation
+    :param path: results path
+    :param name: filename prefix
+    :return: None
     """
     if not os.path.isdir(path):
         os.mkdir(path)
@@ -169,14 +200,11 @@ if __name__ == "__main__":
 
     searchDirectoryPath = path.rstrip('/') + "/"
     queryDirectoryPath = searchDirectoryPath + "Segments/"
-    searchList = sorted(glob.glob(searchDirectoryPath + "Morceaux/" + "*R_*_*.wav"))
-    #queryList = sorted(os.listdir(queryDirectoryPath))
+    searchList = sorted(glob.glob(searchDirectoryPath + "Morceaux/" + "*_*_*.wav"))
     queryList = []
     for directoryName in next(os.walk(queryDirectoryPath))[1]:
         for fileName in sorted(os.listdir(queryDirectoryPath + directoryName)):
             queryList.append(queryDirectoryPath + directoryName + "/" + fileName)
-
-    #querySplitList = buildQuerySplitList(queryList)
 
     if STATS and GRAPH:
         figure = plt.figure()
