@@ -97,7 +97,6 @@ def getConfusionMatrixWithSequences(results, expectations):
     """
     Based on DyLNet transcription structure.
 
-    TODO
     Compare results with expectations and return the number of true positive (TP),
     true negative (TN), false positive (FP), false negative (FN) respectively.
     The results array and the expectations array don't have to be of the same length,
@@ -163,8 +162,16 @@ def getTPRAndFPR(TP, TN, FP, FN):
 
 def computeROCCurve(sweepList, expectations, nbThresholds=100, positiveOnly=False, findOnePerSweep=False, sequenced=False):
     """
-    TODO
+    Compute ROC points for each threshold (from 0 to nbThresholds-1) and return them
+    as a pandas DataFrame, along with the Area Under the Curve (AUC).
 
+    :param sweepList: sweep arrays from search
+    :param expectations: arrays of expected results
+    :nbThresholds: integer (number of thresholds)
+    :positiveOnly: boolean, True to compute only positive results
+    :findOnePerSweep: boolean, True if one found query validates a sweep
+    :sequenced: boolean, True if sweeps are sequenced with begining and ends as from 
+    transcript files
     :return: AUC, ROC curve pivots (x, y, thresholds)
     """
     thresholdList = list(np.array(list(range(0, nbThresholds + 1, 1))) / float(nbThresholds))
@@ -188,8 +195,15 @@ def computeROCCurve(sweepList, expectations, nbThresholds=100, positiveOnly=Fals
 
 def showROCCurve(AUC, pivot, figure=None, plotpos=[1, 1, 1], title="Receiver Operating Characteristic"):
     """
-    TODO
+    Create a new plot figure or add a subplot to the given figure at plotpos position 
+    and draw the curve from given pivot points. If any, write the given title along 
+    with the AUC subtitle.
 
+    :param AUC: float (Area Under the Curve)
+    :param pivot: ROC curve pivot DataFrame (x, y, thresholds)
+    :param figure: Figure instance
+    :param plotpos: subplot position
+    :param title: graph title
     :return: None
     """
     if figure == None:
