@@ -23,6 +23,15 @@ pivotList = manager.list()
 def buildTrainingList(path, testingList, validationList):
     """
     Based on SpeechCommand_v0.02 directory structure.
+
+    Create train set from the data in path depending on the test set and the 
+    validation set. The created train set will contain the rest of the dataset in 
+    path that is neither in the test set, nor in the validation set.
+
+    :param path: path to dataset
+    :param testingList: array representing the test set
+    :param validationList: array representing the validation set
+    :return: array representing the train set
     """
     result = []
     walkTuple = os.walk(path)
@@ -39,6 +48,20 @@ def buildTrainingList(path, testingList, validationList):
 def trimData(data, percentage=0.3):
     """
     Based on SpeechCommand_v0.02 directory structure.
+
+    Shorten data to the specified percentage by directory.
+    Example:
+        data =  bed/00.wav
+                bed/01.wav
+                cat/00.wav
+                cat/01.wav
+        trimData(data, percentage=0.5)
+        result =    bed/bed_0.wav
+                    cat/cat_0.wav
+
+    :param data: 1D array
+    :param percentage: float (0 to 1)
+    :return: data trimmed to percentage
     """
     lengthList = []
     currentDirectoryLength = 0
@@ -76,6 +99,20 @@ def trimData(data, percentage=0.3):
 def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
     """
     Based on SpeechCommand_v0.02 directory structure.
+
+    Create arrays of expected outcomes based on parent directory names.
+    Example:
+        query =     cat/00.wav
+        search =    bed/00.wav
+                    bed/01.wav
+                    cat/00.wav
+                    cat/01.wav
+        expectations =  [[0, 0], [0, 0], [0, 1], [0, 1]]
+
+    :param queryPath: query file path
+    :param searchPatternPath: string pattern for search files
+    :param searchPathList: array of search file paths
+    :return: arrays of expected outcomes
     """
     expectations = []
     currentDirectory = ""
@@ -94,7 +131,10 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
             expectations.append([[0, 0]])
     return expectations
 
-def job(query, nbThresholds=1000, oneWord=True):
+def job(query, nbThresholds=1000, findOnePerSweep=True):
+    """
+    TODO
+    """
     queryPath = path + query
 
     _, sweepList, _ = dtw.runSearch(queryPath, searchPathList=trainingPathList)
@@ -102,7 +142,7 @@ def job(query, nbThresholds=1000, oneWord=True):
     expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
 
     if STATS:
-        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, oneWord=oneWord)
+        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, findOnePerSweep=findOnePerSweep)
         AUCList.append(AUC)
         pivotList.append(pivot)
 
@@ -110,16 +150,24 @@ def job(query, nbThresholds=1000, oneWord=True):
         progression.value += 1
         print("%.2f" % (progression.value * 100 / dataLength.value) + "%", end='\r')
 
-def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
+def run(queryList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True):
     """
-    TODO
+    Call job() function in parallel to search each query from the given query list 
+    among all search files in the given search list.
+    Return the mean AUC and the mean pivot points of all parallel searches.
+
+    :param queryList: array of query files
+    :param searchList: path to query files
+    :param nbThresholds: integer (number of thresholds)
+    :param findOnePerSweep: boolean, True if one found query validates a sweep
+    :return: AUC, ROC curve pivots (x, y, thresholds)
     """
-    dataLength.value = len(data)
+    dataLength.value = len(queryList)
     progression.value = 0
 
     pool = Pool()
     # TODO - use starmap to send more arguments
-    pool.map(job, data)
+    pool.map(job, queryList)
     pool.close()
     pool.join()
 
@@ -136,7 +184,14 @@ def run(data, path, trainingPathList, nbThresholds=1000, oneWord=True):
 
 def save(AUC, pivot, path, name):
     """
-    TODO
+    Save AUC and ROC pivot points to the results directory. AUC is stored in a txt 
+    file and ROC pivot points are saved in a csv file.
+
+    :param AUC: float (Area Under the Curve)
+    :param pivot: pandas data frame pivot representation
+    :param path: results path
+    :param name: filename prefix
+    :return: None
     """
     if not os.path.isdir(path):
         os.mkdir(path)

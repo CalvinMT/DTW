@@ -29,7 +29,7 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
     """
     Based on DyLNet directory structure.
 
-    TODO
+    Create arrays of expected outcomes based on parent directory names.
 
     :param queryPath: query file path
     :param searchPatternPath: string pattern for search files
@@ -39,7 +39,7 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None, swee
     transcript files
     :param useDirectoryName: boolean, True if query are to be grouped by their 
     parent directory name
-    :return: arrays of expected results
+    :return: arrays of expected outcomes
     """
     expectations = []
     if useDirectoryName:
