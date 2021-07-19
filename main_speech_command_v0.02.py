@@ -202,6 +202,7 @@ if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-r', '--resultsname', type=str, default="dtw_sc2", help='Name of the directory containing the results')
+    parser.add_argument('-n', '--nbthresholds', type=int, default=1000, help='Number of thresholds to build ROC curve')
     parser.add_argument('-t', '--trimdata', type=float, default=1.0, help='Enable trimming of test, validation and training lists to the given percentage')
     parser.add_argument('path')
 
@@ -212,10 +213,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     PERCENTAGE = args.percentage
-    trimDataPercentage = args.trimdata
     VERBOSE = args.verbose
+    nbThresholds = args.nbthresholds
     path = args.path
     resultsDirectoryName = args.resultsname
+    trimDataPercentage = args.trimdata
 
     dtw.VERBOSE = VERBOSE
     stats.VERBOSE = VERBOSE
@@ -237,11 +239,11 @@ if __name__ == "__main__":
     resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 
     print("Running test set...")
-    AUC, pivot = run(testingList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True)
+    AUC, pivot = run(testingList, path, trainingPathList, nbThresholds=nbThresholds, findOnePerSweep=True)
     save(AUC, pivot, resultsPath, "test")
 
     print("Running validation set...")
-    AUC, pivot = run(validationList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True)
+    AUC, pivot = run(validationList, path, trainingPathList, nbThresholds=nbThresholds, findOnePerSweep=True)
     save(AUC, pivot, resultsPath, "validation")
 
     print("Done")
