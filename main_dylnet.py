@@ -174,8 +174,8 @@ if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
-    parser.add_argument('searchpatternpath')
     parser.add_argument('querydirectorypath')
+    parser.add_argument('searchpatternpath')
 
     printGroup = parser.add_mutually_exclusive_group()
     printGroup.add_argument('-p', '--percentage', action='store_true', help='Enable percentage display')
