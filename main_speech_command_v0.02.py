@@ -131,7 +131,7 @@ def buildExpectations(queryPath, searchPatternPath="", searchPathList=None):
             expectations.append([[0, 0]])
     return expectations
 
-def job(query, nbThresholds=1000, findOnePerSweep=True):
+def job(query, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True):
     """
     TODO
     """
@@ -164,9 +164,9 @@ def run(queryList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=Tr
     dataLength.value = len(queryList)
     progression.value = 0
 
+    iterable = [(x, path, trainingPathList, nbThresholds, findOnePerSweep) for x in queryList]
     pool = Pool()
-    # TODO - use starmap to send more arguments
-    pool.map(job, queryList)
+    pool.starmap(job, iterable)
     pool.close()
     pool.join()
 
@@ -237,11 +237,11 @@ if __name__ == "__main__":
     resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 
     print("Running test set...")
-    AUC, pivot = run(testingList, path, trainingPathList)
+    AUC, pivot = run(testingList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True)
     save(AUC, pivot, resultsPath, "test")
 
     print("Running validation set...")
-    AUC, pivot = run(validationList, path, trainingPathList)
+    AUC, pivot = run(validationList, path, trainingPathList, nbThresholds=1000, findOnePerSweep=True)
     save(AUC, pivot, resultsPath, "validation")
 
     print("Done")
