@@ -174,7 +174,8 @@ if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
     parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
-    parser.add_argument('path')
+    parser.add_argument('searchpatternpath')
+    parser.add_argument('querydirectorypath')
 
     printGroup = parser.add_mutually_exclusive_group()
     printGroup.add_argument('-p', '--percentage', action='store_true', help='Enable percentage display')
@@ -184,15 +185,14 @@ if __name__ == "__main__":
 
     PERCENTAGE = args.percentage
     VERBOSE = args.verbose
-    path = args.path
+    queryDirectoryPath = args.querydirectorypath
     resultsDirectoryName = args.resultsname
+    searchPatternPath = args.searchpatternpath
 
     dtw.VERBOSE = VERBOSE
     stats.VERBOSE = VERBOSE
 
-    searchDirectoryPath = path.rstrip('/') + "/"
-    queryDirectoryPath = searchDirectoryPath + "Segments/"
-    searchList = sorted(glob.glob(searchDirectoryPath + "Morceaux/" + "*_*_*.wav"))
+    searchList = sorted(glob.glob(searchPatternPath))
     queryList = []
     for directoryName in next(os.walk(queryDirectoryPath))[1]:
         for fileName in sorted(os.listdir(queryDirectoryPath + directoryName)):
