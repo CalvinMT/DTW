@@ -217,7 +217,6 @@ if __name__ == "__main__":
     path = args.path
     resultsDirectoryName = args.resultsname
 
-    dtw.PERCENTAGE = PERCENTAGE
     dtw.VERBOSE = VERBOSE
     stats.VERBOSE = VERBOSE
 
