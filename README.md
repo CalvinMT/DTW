@@ -16,18 +16,16 @@ or
 
 ### Speech Command v0.02
 
-`python ./main_speech_command_v0.02.py '../../Datasets/speech_commands_v0.02/' -ps`
-
-old (`python ./main_speech_command_v0.02.py '../../Datasets/speech_commands_v0.02/*/a331d9cb_nohash_*.wav' -ps`)
+`python ./main_speech_command_v0.02.py -p -t=0.05 -r='dtw_sc2_0.05' <data_path>`
 
 
 
 ### DyLNet
 
-`python ./main_dylnet.py -ps ../../Datasets/dylnet/Selection_morceaux/`
+`python ./main_dylnet.py -p -r='dtw_dylnet_test' <queries_path> <search_pattern_path>`
 
 
 
 ### Results
 
-`python ./main_results.py -sgt results/<folder>/`
+`python ./main_results.py -sga results/<folder>/`
