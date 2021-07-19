@@ -11,9 +11,7 @@ import matplotlib.pyplot as plt
 from multiprocessing import Pool, Manager
 from unidecode import unidecode
 
-GRAPH = False
 PERCENTAGE = False
-STATS = False
 VERBOSE = False
 
 RESULTS_ROOT_DIRECTORY = "results/"
@@ -104,10 +102,9 @@ def job(queryPath, searchList, nbThresholds=1000, findOnePerSweep=False, sequenc
 
     expectations = buildExpectations(queryPath, searchPathList=searchListWithoutQuery, sequenced=sequenced, useDirectoryName=useDirectoryName)
 
-    if STATS:
-        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, findOnePerSweep=findOnePerSweep, sequenced=sequenced)
-        AUCList.append(AUC)
-        pivotList.append(pivot)
+    AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, findOnePerSweep=findOnePerSweep, sequenced=sequenced)
+    AUCList.append(AUC)
+    pivotList.append(pivot)
 
     if PERCENTAGE:
         progression.value += 1
@@ -176,9 +173,7 @@ def save(AUC, pivot, path, name):
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
-    parser.add_argument('-g', '--graph', action='store_true', help='Enable graph display')
     parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
-    parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics display')
     parser.add_argument('path')
 
     printGroup = parser.add_mutually_exclusive_group()
@@ -187,9 +182,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    GRAPH = args.graph
     PERCENTAGE = args.percentage
-    STATS = args.stats
     VERBOSE = args.verbose
     path = args.path
     resultsDirectoryName = args.resultsname
@@ -205,9 +198,6 @@ if __name__ == "__main__":
     for directoryName in next(os.walk(queryDirectoryPath))[1]:
         for fileName in sorted(os.listdir(queryDirectoryPath + directoryName)):
             queryList.append(queryDirectoryPath + directoryName + "/" + fileName)
-
-    if STATS and GRAPH:
-        figure = plt.figure()
 
     resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 

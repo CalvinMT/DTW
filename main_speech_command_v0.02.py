@@ -8,9 +8,7 @@ import matplotlib.pyplot as plt
 
 from multiprocessing import Pool, Manager
 
-GRAPH = False
 PERCENTAGE = False
-STATS = False
 VERBOSE = False
 
 RESULTS_ROOT_DIRECTORY = "results/"
@@ -143,10 +141,9 @@ def job(query, nbThresholds=1000, findOnePerSweep=True):
 
     expectations = buildExpectations(queryPath, searchPathList=trainingPathList)
 
-    if STATS:
-        AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, findOnePerSweep=findOnePerSweep)
-        AUCList.append(AUC)
-        pivotList.append(pivot)
+    AUC, pivot = stats.computeROCCurve(sweepList, expectations, nbThresholds=nbThresholds, findOnePerSweep=findOnePerSweep)
+    AUCList.append(AUC)
+    pivotList.append(pivot)
 
     if PERCENTAGE:
         progression.value += 1
@@ -204,9 +201,7 @@ def save(AUC, pivot, path, name):
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
-    parser.add_argument('-g', '--graph', action='store_true', help='Enable graph display')
     parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
-    parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics display')
     parser.add_argument('-t', '--trimdata', type=float, default=1.0, help='Enable trimming of test, validation and training lists to the given percentage')
     parser.add_argument('path')
 
@@ -216,9 +211,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    GRAPH = args.graph
     PERCENTAGE = args.percentage
-    STATS = args.stats
     trimDataPercentage = args.trimdata
     VERBOSE = args.verbose
     path = args.path
@@ -241,9 +234,6 @@ if __name__ == "__main__":
         trainingList = trimData(trainingList, trimDataPercentage)
 
     trainingPathList = [path + x for x in trainingList]
-
-    if STATS and GRAPH:
-        figure = plt.figure()
 
     resultsPath = RESULTS_ROOT_DIRECTORY + resultsDirectoryName.rstrip('/') + "/"
 
