@@ -201,7 +201,7 @@ def save(AUC, pivot, path, name):
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description='Dynamic Time Warping')
-    parser.add_argument('-r', '--resultsname', type=str, default="dtw_dylnet", help='Name of the directory containing the results')
+    parser.add_argument('-r', '--resultsname', type=str, default="dtw_sc2", help='Name of the directory containing the results')
     parser.add_argument('-t', '--trimdata', type=float, default=1.0, help='Enable trimming of test, validation and training lists to the given percentage')
     parser.add_argument('path')
 
